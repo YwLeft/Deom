@@ -78,6 +78,5 @@ public class XCRoundImageView extends ImageView {
         canvas.drawBitmap(bitmap, rect, rect, paint);
         return output;
 
-
     }
 }
