@@ -1,6 +1,8 @@
 package com.example.asus.demo.adapter;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.os.Environment;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,10 +12,13 @@ import android.widget.TextView;
 
 import com.example.asus.demo.bean.ZhuBean;
 import com.example.asus.gaozhijie20170922.R;
+import com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiskCache;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.display.CircleBitmapDisplayer;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 
+import java.io.File;
 import java.util.List;
 
 import butterknife.BindView;
@@ -29,6 +34,33 @@ public class MyZhuAdapter extends RecyclerView.Adapter<MyZhuAdapter.ViewHolder> 
     public MyZhuAdapter(Context context, List<ZhuBean.OthersBean> mlist) {
         this.context = context;
         this.mlist = mlist;
+        //创建默认的ImageLoader配置参数
+        ImageLoaderConfiguration configuration = ImageLoaderConfiguration.createDefault(context);
+
+        //将configuration配置到imageloader中
+        imageloader= ImageLoader.getInstance();
+        imageloader.init(configuration);
+
+        //自定义ImageLoader缓冲目录
+        File flie= new File(Environment.getExternalStorageDirectory(),"bawei");
+        if(!flie.exists()){
+            flie.mkdirs();
+        }
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(context)
+                .diskCache(new UnlimitedDiskCache(flie))
+                .build();
+        imageloader.init(configuration);
+
+        options=new DisplayImageOptions.Builder()
+
+                .cacheInMemory(true)
+                .cacheOnDisk(true)
+                .bitmapConfig(Bitmap.Config.ARGB_8888)
+                .showImageOnLoading(R.mipmap.ic_launcher)
+                .showImageForEmptyUri(R.mipmap.ic_launcher)
+                .showImageOnFail(R.mipmap.ic_launcher)
+                .imageScaleType(ImageScaleType.EXACTLY)
+                .build();
 
     }
 
@@ -43,12 +75,7 @@ public class MyZhuAdapter extends RecyclerView.Adapter<MyZhuAdapter.ViewHolder> 
     public void onBindViewHolder(ViewHolder holder, int position) {
         ZhuBean.OthersBean bean = mlist.get(position);
         holder.zhuTitle.setText(bean.getName());
-//        imageloader.displayImage(bean.getThumbnail(), holder.zhuImage, options);
-        DisplayImageOptions displayImageOptions = new DisplayImageOptions
-                .Builder()
-                .displayer(new CircleBitmapDisplayer())
-                .build();
-        ImageLoader.getInstance().displayImage(bean.getThumbnail(),holder.zhuImage,displayImageOptions);
+        imageloader.displayImage(bean.getThumbnail(), holder.zhuImage, options);
 
         holder.itemView.setTag(position);
 
